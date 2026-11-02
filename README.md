@@ -9,9 +9,11 @@ Ten poradnik rozwiązuje problemy z działaniem aplikacji **Szafir Host** oraz *
 **Problem:** Aplikacja Szafir Host nie widzi bibliotek, zawiesza się lub wyłącza (crash) podczas próby podpisu w chmurze na komputerach z procesorem M1/M2/M3.
 
 ### Wymagania wstępne
-* Zainstalowany **SimplySign Desktop** (aplikacja musi być być aktywna, a użytkownik musi być zalogowany).
+Sprawdzone na: **SimplySign Desktop 2.10.22**, **SzafirHost 1.1.0** (oficjalnie dostępna jest już 1.2.2, nie testowane), Temurin 17 x64, macOS na Apple Silicon.
+
+* Zainstalowany **SimplySign Desktop** (aplikacja musi być aktywna, a użytkownik musi być zalogowany).
 * Zainstalowany **Szafir Host**.
-* Zasintalowana w przeglądarce wtyczka **Szafir**
+* Zainstalowana w przeglądarce wtyczka **Szafir**
 
 ---
 
@@ -31,6 +33,8 @@ Otwórz Terminal i wpisz:
 cp /usr/local/lib/libSimplySignPKCS.dylib /Applications/SzafirHost/
 sudo xattr -cr /Applications/SzafirHost/libSimplySignPKCS.dylib
 ```
+
+> **Po każdej aktualizacji SimplySign Desktop skopiuj bibliotekę ponownie** (te same dwie komendy). W `/usr/local/lib` jest tylko symlink do aktualnej wersji, a kopia w SzafirHost się nie aktualizuje.
 
 ### Krok 3: Usuń wadliwy wrapper Szafira (Naprawa Crasha)
 Wbudowana biblioteka Szafira (`libpkcs11wrapper`) w wersji Intel powoduje błędy pamięci (`SIGABRT`) przy próbie załadowania na nowszych systemach. Musimy ją wyłączyć (zmienić nazwę), aby Java użyła własnego, stabilnego mechanizmu.
@@ -65,7 +69,7 @@ Musimy wymusić na aplikacji pracę w konkretnym folderze i z konkretną wersją
    ```
 
 ### Krok 5: Skonfiguruj wskazanie na kartę (config.xml)
-Wskazujemy lokalny plik z Kroku 2 i wymuszamy Slot 0. Jest to kluczowe, aby uniknąć błędu "Signing certificates not read".
+Wskazujemy lokalny plik z Kroku 2 i wymuszamy Slot 1 (z nowszym SimplySign Desktop 2.10.x działa slot 1; jeśli nadal widzisz "Signing certificates not read", spróbuj `0`). Jest to kluczowe, aby uniknąć błędu "Signing certificates not read".
 
 1. Edytuj plik w Terminalu (lub utwórz go - może się zdarzyć, że nie ma go w katalogu z aplikacją):
    ```bash
@@ -79,7 +83,7 @@ Wskazujemy lokalny plik z Kroku 2 i wymuszamy Slot 0. Jest to kluczowe, aby unik
        <crypto>
            <modules>
                <module path="/Applications/SzafirHost/libSimplySignPKCS.dylib">
-                   <slotListIndex>0</slotListIndex>
+                   <slotListIndex>1</slotListIndex>
                </module>
            </modules>
        </crypto>
@@ -94,3 +98,8 @@ Wskazujemy lokalny plik z Kroku 2 i wymuszamy Slot 0. Jest to kluczowe, aby unik
 1.  **Zrestartuj przeglądarkę** (Koniecznie: `Cmd + Q` nie tylko zamknięcie okna).
 2.  Upewnij się, że **SimplySign Desktop** jest uruchomiony i połączony.
 3.  Wejdź na stronę (np. wFirma) i podpisz dokument. Powinieneś otrzymać powiadomienie z aplikacji (podanie PIN).
+
+---
+
+### Znany problem
+Nawet po naprawie SzafirHost może czasem wysypać się z `SIGSEGV` w `libccpkip11.dylib` (log `hs_err_pid*.log` w katalogu aplikacji). Pomaga ponowne uruchomienie SzafirHost i SimplySign Desktop.
