@@ -102,4 +102,4 @@ Wskazujemy lokalny plik z Kroku 2 i wymuszamy Slot 1 (z nowszym SimplySign Deskt
 ---
 
 ### Znany problem
-Nawet po naprawie SzafirHost może czasem wysypać się z `SIGSEGV` w `libccpkip11.dylib` (log `hs_err_pid*.log` w katalogu aplikacji). Pomaga ponowne uruchomienie SzafirHost i SimplySign Desktop.
+Nawet po naprawie SzafirHost może czasem wysypać się z `SIGSEGV` w `libccpkip11.dylib` (log `hs_err_pid*.log` w katalogu aplikacji).
